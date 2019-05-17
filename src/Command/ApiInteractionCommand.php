@@ -30,9 +30,15 @@ class ApiInteractionCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln('What are the names of the names of all deliveryTime entities');
+        $output->writeln('What are the names of all deliveryTime entities');
 
         $response = $this->restService->request('GET', 'delivery-time');
+//        $response = $this->restService->request('POST', '/delivery-time', [
+//            'name' => 'api call',
+//            'min' => 1,
+//            'max' => 5,
+//            'unit' => 'month'
+//        ]);
 
         $body = json_decode($response->getBody()->getContents(), true);
 

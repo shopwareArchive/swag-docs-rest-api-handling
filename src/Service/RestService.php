@@ -42,6 +42,9 @@ class RestService
         $this->getAdminAccess();
     }
 
+    /**
+     * Entry point for any API call
+     */
     public function request(string $method, string $uri, ?array $body = null): ResponseInterface
     {
         $bodyEncoded = json_encode($body);
@@ -51,9 +54,12 @@ class RestService
         return $this->send($request, $uri);
     }
 
+    /**
+     * Send a given request and refresh your access key if needed
+     */
     private function send(RequestInterface $request, string $uri)
     {
-        if ($this->expiresAt <= new \DateTime()) {
+        if ($this->expiresAt <= (new \DateTime())) {
             $this->refreshAuthToken();
 
             $body = $request->getBody()->getContents();
@@ -64,6 +70,9 @@ class RestService
         return $this->restClient->send($request);
     }
 
+    /**
+     * Create a Request object for guzzle, especially for the Shopware Platform API
+     */
     private function createShopwareApiRequest(string $method, string $uri, ?string $body = null): RequestInterface
     {
         return new Request(
@@ -77,6 +86,9 @@ class RestService
         );
     }
 
+    /**
+     * Request authorization information for future requests
+     */
     private function getAdminAccess(): void
     {
         $body = \json_encode([
@@ -101,6 +113,9 @@ class RestService
         $this->setAccessData($body);
     }
 
+    /**
+     * Request updated authorization information, since your past access key might be expired
+     */
     private function refreshAuthToken(): void
     {
         $body = \json_encode([
@@ -124,6 +139,9 @@ class RestService
         $this->setAccessData($body);
     }
 
+    /**
+     * Set the authorization information to its corresponding properties
+     */
     private function setAccessData(array $body): void
     {
         $this->accessToken = $body['access_token'];
@@ -131,6 +149,9 @@ class RestService
         $this->expiresAt = $this->calculateExpiryTime((int) $body['expires_in']);
     }
 
+    /**
+     * Generate a DateTimeInterface object to determine whether the request would fail due to expired authorization
+     */
     private function calculateExpiryTime(int $expiresIn): \DateTimeInterface
     {
         $expiryTimestamp = (new \DateTime())->getTimestamp() + $expiresIn;
