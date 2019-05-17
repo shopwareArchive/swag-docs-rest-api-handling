@@ -1,0 +1,140 @@
+<?php declare(strict_types=1);
+
+namespace Swag\RestApiHandling\Service;
+
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
+
+class RestService
+{
+    /**
+     * @var Client
+     */
+    private $restClient;
+
+    /**
+     * @var SystemConfigService
+     */
+    private $config;
+
+    /**
+     * @var string
+     */
+    private $accessToken;
+
+    /**
+     * @var string
+     */
+    private $refreshToken;
+
+    /**
+     * @var \DateTimeInterface
+     */
+    private $expiresAt;
+
+    public function __construct(SystemConfigService $config)
+    {
+        $this->restClient = new Client();
+        $this->config = $config;
+        $this->getAdminAccess();
+    }
+
+    public function request(string $method, string $uri, ?array $body = null): ResponseInterface
+    {
+        $bodyEncoded = json_encode($body);
+
+        $request = $this->createShopwareApiRequest($method, $uri, $bodyEncoded);
+
+        return $this->send($request, $uri);
+    }
+
+    private function send(RequestInterface $request, string $uri)
+    {
+        if ($this->expiresAt <= new \DateTime()) {
+            $this->refreshAuthToken();
+
+            $body = $request->getBody()->getContents();
+
+            $request = $this->createShopwareApiRequest($request->getMethod(), $uri, $body);
+        }
+
+        return $this->restClient->send($request);
+    }
+
+    private function createShopwareApiRequest(string $method, string $uri, ?string $body = null): RequestInterface
+    {
+        return new Request(
+            $method,
+            getenv('APP_URL') . '/api/v1/' . $uri,
+            [
+                'Authorization' => 'Bearer ' . $this->accessToken,
+                'Accept' => '*/*'
+            ],
+            $body
+        );
+    }
+
+    private function getAdminAccess(): void
+    {
+        $body = \json_encode([
+            'client_id' => 'administration',
+            'grant_type' => 'password',
+            'scopes' => $this->config->get('RestApiHandling.config.scope'),
+            'username' => $this->config->get('RestApiHandling.config.username'),
+            'password' => $this->config->get('RestApiHandling.config.password')
+        ]);
+
+        $request = new Request(
+            'POST',
+            getenv('APP_URL') . '/api/oauth/token',
+            ['Content-Type' => 'application/json'],
+            $body
+        );
+
+        $response = $this->restClient->send($request);
+
+        $body = json_decode($response->getBody()->getContents(), true);
+
+        $this->setAccessData($body);
+    }
+
+    private function refreshAuthToken(): void
+    {
+        $body = \json_encode([
+            'client_id' => 'administration',
+            'grant_type' => 'refresh_token',
+            'scopes' => $this->config->get('RestApiHandling.config.scope'),
+            'refresh_token' => $this->refreshToken
+        ]);
+
+        $request = new Request(
+            'POST',
+            getenv('APP_URL') . '/api/oauth/token',
+            ['Content-Type' => 'application/json'],
+            $body
+        );
+
+        $response = $this->restClient->send($request);
+
+        $body = json_decode($response->getBody()->getContents(), true);
+
+        $this->setAccessData($body);
+    }
+
+    private function setAccessData(array $body): void
+    {
+        $this->accessToken = $body['access_token'];
+        $this->refreshToken = $body['refresh_token'];
+        $this->expiresAt = $this->calculateExpiryTime((int) $body['expires_in']);
+    }
+
+    private function calculateExpiryTime(int $expiresIn): \DateTimeInterface
+    {
+        $expiryTimestamp = (new \DateTime())->getTimestamp() + $expiresIn;
+
+        return (new \DateTimeImmutable())->setTimestamp($expiryTimestamp);
+    }
+}

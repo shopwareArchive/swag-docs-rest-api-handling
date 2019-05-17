@@ -1,0 +1,31 @@
+{
+    "name": "swag/rest-api-handling",
+    "description": "Plugin with an example how to work with the API",
+    "version": "v1.0.0",
+    "type": "shopware-platform-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "shopware AG"
+        }
+    ],
+    "require": {
+        "shopware/platform": "dev-master"
+    },
+    "extra": {
+        "shopware-plugin-class": "Swag\\RestApiHandling\\RestApiHandling",
+        "label": {
+            "de-DE": "Plugin mit einem Beispiel wie man mit der API arbeitet",
+            "en-GB": "Plugin with an example how to work with the API"
+        },
+        "description": {
+            "de-DE": "Plugin mit einem Beispiel wie man mit der API arbeitet",
+            "en-GB": "Plugin with an example how to work with the API"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Swag\\RestApiHandling\\": "src/"
+        }
+    }
+}

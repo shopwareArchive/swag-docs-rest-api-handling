@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
+
+    <card>
+        <title>User Data</title>
+        <title lang="de-DE">Benutzerdaten</title>
+        <input-field>
+            <name>username</name>
+            <label>Api user name</label>
+            <label lang="de-DE">API Benutzername</label>
+        </input-field>
+        <input-field type="password">
+            <name>password</name>
+            <label>Api user password</label>
+            <label lang="de-DE">API Benutzerpasswort</label>
+        </input-field>
+        <input-field type="single-select">
+            <name>scope</name>
+            <label>API access level</label>
+            <label lang="de-DE">API Zugriffslevel</label>
+            <options>
+                <option>
+                    <id>write</id>
+                    <name>Write-Access</name>
+                    <name lang="de-DE">Schreibzugriff</name>
+                </option>
+                <option>
+                    <id>read</id>
+                    <name>Read-Access</name>
+                    <name lang="de-DE">Lesezugriff</name>
+                </option>
+            </options>
+        </input-field>
+    </card>
+</config>
