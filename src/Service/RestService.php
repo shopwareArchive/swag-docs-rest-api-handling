@@ -39,7 +39,6 @@ class RestService
     {
         $this->restClient = new Client();
         $this->config = $config;
-        $this->getAdminAccess();
     }
 
     /**
@@ -47,6 +46,10 @@ class RestService
      */
     public function request(string $method, string $uri, ?array $body = null): ResponseInterface
     {
+        if ($this->accessToken === null || $this->refreshToken === null || $this->expiresAt === null) {
+            $this->getAdminAccess();
+        }
+
         $bodyEncoded = json_encode($body);
 
         $request = $this->createShopwareApiRequest($method, $uri, $bodyEncoded);
