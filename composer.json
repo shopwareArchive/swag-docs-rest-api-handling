@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "shopware/platform": "dev-master"
+        "shopware/core": "*"
     },
     "extra": {
         "shopware-plugin-class": "Swag\\RestApiHandling\\RestApiHandling",
