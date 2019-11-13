@@ -83,7 +83,8 @@ class RestService
             getenv('APP_URL') . '/api/v1/' . $uri,
             [
                 'Authorization' => 'Bearer ' . $this->accessToken,
-                'Accept' => '*/*'
+                'Accept' => '*/*',
+                'Content-Type' => 'application/json'
             ],
             $body
         );
