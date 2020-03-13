@@ -3,6 +3,7 @@
 namespace Swag\RestApiHandling\Service;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -60,7 +61,7 @@ class RestService
     /**
      * Send a given request and refresh your access key if needed
      */
-    private function send(RequestInterface $request, string $uri)
+    private function send(RequestInterface $request, string $uri): ResponseInterface
     {
         if ($this->expiresAt <= (new \DateTime())) {
             $this->refreshAuthToken();
@@ -70,7 +71,7 @@ class RestService
             $request = $this->createShopwareApiRequest($request->getMethod(), $uri, $body);
         }
 
-        return $this->restClient->send($request);
+        return $this->sendRequest($request);
     }
 
     /**
@@ -110,7 +111,7 @@ class RestService
             $body
         );
 
-        $response = $this->restClient->send($request);
+        $response = $this->sendRequest($request);
 
         $body = json_decode($response->getBody()->getContents(), true);
 
@@ -136,7 +137,7 @@ class RestService
             $body
         );
 
-        $response = $this->restClient->send($request);
+        $response = $this->sendRequest($request);
 
         $body = json_decode($response->getBody()->getContents(), true);
 
@@ -161,5 +162,24 @@ class RestService
         $expiryTimestamp = (new \DateTime())->getTimestamp() + $expiresIn;
 
         return (new \DateTimeImmutable())->setTimestamp($expiryTimestamp);
+    }
+
+    private function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        try {
+            $response = $this->restClient->send($request);
+        } catch (ClientException $e) {
+            $errors = json_decode($e->getResponse()->getBody()->getContents(), true)['errors'];
+
+            $message = "Request failed:\n";
+
+            foreach ($errors as $key => $error) {
+                $message .= 'Error ' . $key . ': ' . $error['title'] . ' ' . $error['detail'] . "\n";
+            }
+
+            throw new \RuntimeException($message);
+        }
+
+        return $response;
     }
 }
