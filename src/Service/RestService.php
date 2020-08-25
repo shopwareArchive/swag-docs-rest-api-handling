@@ -7,6 +7,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Shopware\Core\PlatformRequest;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class RestService
@@ -81,7 +82,7 @@ class RestService
     {
         return new Request(
             $method,
-            getenv('APP_URL') . '/api/v1/' . $uri,
+            getenv('APP_URL') . '/api/v' . PlatformRequest::API_VERSION .'/' . $uri,
             [
                 'Authorization' => 'Bearer ' . $this->accessToken,
                 'Accept' => '*/*',
