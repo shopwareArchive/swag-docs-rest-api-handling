@@ -32,7 +32,7 @@ class ApiInteractionCommand extends Command
     {
         $output->writeln('What are the names of all deliveryTime entities');
 
-        $response = $this->restService->request('GET', 'delivery-time');
+        $response = $this->restService->request('GET', 'delivery-time?sort=name');
 //        $response = $this->restService->request('POST', '/delivery-time', [
 //            'name' => 'api call',
 //            'min' => 1,
