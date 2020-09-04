@@ -4,6 +4,8 @@ namespace Swag\RestApiHandling\Service;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -169,8 +171,12 @@ class RestService
     {
         try {
             $response = $this->restClient->send($request);
-        } catch (ClientException $e) {
-            $errors = json_decode($e->getResponse()->getBody()->getContents(), true)['errors'];
+        } catch (ClientException|ConnectException|RequestException $e) {
+            $response = $e->getResponse();
+            if ($response === null) {
+                throw $e;
+            }
+            $errors = json_decode($response->getBody()->getContents(), true)['errors'];
 
             $message = "Request failed:\n";
 
