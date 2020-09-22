@@ -38,6 +38,7 @@ class ApiInteractionCommandTest extends TestCase
 
         $result = $commandTester->getDisplay();
         $result = array_filter(explode("\n", $result));
+        static::assertCount(\count($expected), $result);
         foreach ($result as $index => $line) {
             static::assertSame($expected[$index], $line);
         }

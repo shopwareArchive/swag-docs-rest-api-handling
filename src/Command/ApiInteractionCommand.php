@@ -28,7 +28,7 @@ class ApiInteractionCommand extends Command
             ->setDescription('This is an example of how to work with the API');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('What are the names of all deliveryTime entities');
 
@@ -45,5 +45,7 @@ class ApiInteractionCommand extends Command
         foreach ($body['data'] as $deliveryTime) {
             $output->writeln($deliveryTime['attributes']['name']);
         }
+
+        return 0;
     }
 }
